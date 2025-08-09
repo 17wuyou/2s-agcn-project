@@ -1,8 +1,11 @@
+# config.yaml
+
 # 数据配置
 data:
-  data_path: "./data/ntu_rgbd_skeletons.npy" # 伪路径，请替换
-  num_joints: 25   # NTU-RGBD数据集的关节点数
-  num_classes: 60  # NTU-RGBD数据集的动作类别数
+  # 将 data_path 指向一个文件夹，而不是一个文件
+  data_path: "./generated_data" 
+  num_joints: 25
+  num_classes: 60
 
 # 模型配置
 model:
