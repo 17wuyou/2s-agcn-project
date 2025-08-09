@@ -1,11 +1,14 @@
+# run.py (Corrected Version)
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import os # 1. 导入 os 模块
 
 from agcn.utils import load_config, get_adj_matrix
 from agcn.dataset import SkeletonDataset
-from agcn.model import Model_2sAGCN # 假设model.py包含所有模型类
+from agcn.model import Model_2sAGCN
 from agcn.engine import train_one_epoch, evaluate
 
 def main():
@@ -18,28 +21,15 @@ def main():
     print(f"Using device: {device}")
 
     # 3. 准备数据
-    train_dataset = SkeletonDataset(
-        data_path=config['data']['data_path'],
-        num_joints=config['data']['num_joints'],
-        num_classes=config['data']['num_classes'],
-        mode='train'
-    )
-    val_dataset = SkeletonDataset(
-        data_path=config['data']['data_path'],
-        num_joints=config['data']['num_joints'],
-        num_classes=config['data']['num_classes'],
-        mode='val'
-    )
+    train_dataset = SkeletonDataset(config, mode='train')
+    val_dataset = SkeletonDataset(config, mode='val')
     train_loader = DataLoader(train_dataset, batch_size=config['training']['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=config['training']['batch_size'], shuffle=False)
     print("Data loaded.")
 
     # 4. 准备模型
-    # 获取邻接矩阵
     A = get_adj_matrix(config['data']['num_joints']).to(device)
-    # 定义骨骼对 (需要根据数据集真实定义)
-    bone_pairs = [(i, i + 1) for i in range(config['data']['num_joints'] - 1)] # 演示版本
-    
+    bone_pairs = [(i, i + 1) for i in range(config['data']['num_joints'] - 1)] 
     model = Model_2sAGCN(
         num_joints=config['data']['num_joints'],
         num_classes=config['data']['num_classes'],
@@ -49,13 +39,19 @@ def main():
     print("Model created.")
 
     # 5. 定义损失函数和优化器
-    # 注意：模型的输出是softmax后的scores，如果用CrossEntropyLoss，模型末尾不应有softmax
-    # 我们修改模型输出logits，在loss函数中自动处理softmax
-    # 假设模型输出logits，而不是scores
-    criterion = nn.CrossEntropyLoss() 
+    criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['training']['learning_rate'])
-    
-    # 6. 训练循环
+
+    # --- *** 这是修正的部分 *** ---
+    # 6. 准备保存目录
+    save_path = config['training']['save_path']
+    save_dir = os.path.dirname(save_path) # 获取目录路径 ./checkpoints
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+        print(f"Created directory: {save_dir}")
+    # --- *** 修正结束 *** ---
+
+    # 7. 训练循环
     best_acc = 0.0
     print("Starting training...")
     for epoch in range(config['training']['epochs']):
@@ -69,7 +65,7 @@ def main():
         # 保存最佳模型
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), config['training']['save_path'])
+            torch.save(model.state_dict(), save_path) # 使用变量 save_path
             print(f"New best model saved with accuracy: {best_acc:.2f}%")
 
     print("Training finished.")
