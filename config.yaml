@@ -1,0 +1,17 @@
+# 数据配置
+data:
+  data_path: "./data/ntu_rgbd_skeletons.npy" # 伪路径，请替换
+  num_joints: 25   # NTU-RGBD数据集的关节点数
+  num_classes: 60  # NTU-RGBD数据集的动作类别数
+
+# 模型配置
+model:
+  in_channels: 3   # 输入特征维度 (x, y, z)
+
+# 训练配置
+training:
+  epochs: 80
+  batch_size: 32
+  learning_rate: 0.001
+  device: "cuda" # 如果有GPU，使用"cuda"，否则"cpu"
+  save_path: "./checkpoints/best_model.pth" # 模型保存路径
