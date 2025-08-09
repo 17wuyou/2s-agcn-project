@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import pickle
+import os
 
 class SkeletonDataset(Dataset):
     """
@@ -17,18 +18,17 @@ class SkeletonDataset(Dataset):
             config (dict): 从 config.yaml 加载的配置字典。
             mode (str): 'train' 或 'val'。
         """
-        print(f"Initializing SkeletonDataset in '{mode}' mode from REAL data.")
+        print(f"Initializing SkeletonDataset in '{mode}' mode from REAL data files.")
         
-        data_path = config['data']['data_path'] # e.g., './data/ntu60_xsub'
-        label_path = config['data']['label_path'] # e.g., './data/ntu60_xsub'
+        data_path = config['data']['data_path'] # e.g., './generated_data'
         
         # 根据模式选择加载的文件
         if mode == 'train':
-            data_file = f"{data_path}/train_data.npy"
-            label_file = f"{label_path}/train_label.pkl"
+            data_file = os.path.join(data_path, 'train_data.npy')
+            label_file = os.path.join(data_path, 'train_label.pkl')
         elif mode == 'val':
-            data_file = f"{data_path}/val_data.npy"
-            label_file = f"{label_path}/val_label.pkl"
+            data_file = os.path.join(data_path, 'val_data.npy')
+            label_file = os.path.join(data_path, 'val_label.pkl')
         else:
             raise ValueError("Mode must be 'train' or 'val'")
 
@@ -38,12 +38,15 @@ class SkeletonDataset(Dataset):
         
         print(f"Loading labels from: {label_file}")
         with open(label_file, 'rb') as f:
+            # 假设 pickle 文件中存储的是一个元组 (sample_names, labels)
             self.sample_name, self.labels = pickle.load(f)
 
-        # 数据形状通常是 (N, C, T, V, M) -> [样本数, 通道, 帧, 关节, 人数]
-        # 我们只使用第一个人 (M=0) 的数据来简化
-        if self.data.shape[-1] > 1:
+        # 检查是否有M（人数）维度，如果有，则简化
+        if self.data.ndim == 5 and self.data.shape[-1] > 1:
+            print("Data has 5 dimensions, selecting data for the first person.")
             self.data = self.data[:, :, :, :, 0]
+        
+        print("Data loading complete.")
 
     def __len__(self):
         return len(self.labels)
