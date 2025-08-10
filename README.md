@@ -24,8 +24,8 @@
 ├── requirements.txt                 # Python依赖库
 ├── run.py                           # 主执行脚本
 ├── generate_dataset.py              # 半真实数据集生成脚本
-└── README.md                        # 本说明文件```
-
+└── README.md                        # 本说明文件
+```
 ---
 
 ## 快速开始：环境配置
