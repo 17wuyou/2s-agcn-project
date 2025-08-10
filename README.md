@@ -32,7 +32,7 @@
 
 1.  **克隆项目**
     ```bash
-    git clone <your-repo-link>
+    git clone https://github.com/17wuyou/2s-agcn-project.git
     cd 2s-agcn-project
 ```
 
