@@ -34,7 +34,7 @@
     ```bash
     git clone https://github.com/17wuyou/2s-agcn-project.git
     cd 2s-agcn-project
-```
+    ```
 
 2.  **创建并激活虚拟环境 (推荐)**
     ```bash
